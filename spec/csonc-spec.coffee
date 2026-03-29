@@ -1,7 +1,7 @@
 path = require 'path'
 fs = require 'fs-plus'
 temp = require 'temp'
-csonc = require '../lib/csonc'
+csonc = require '../src/csonc'
 
 describe "CSON compilation to JSON", ->
   [compileDir, inputFile, outputFile] = []

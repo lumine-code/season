@@ -1,7 +1,7 @@
 path = require 'path'
 fs = require 'fs-plus'
 temp = require 'temp'
-CSON = require '../lib/cson'
+CSON = require '../src/cson'
 parser = require 'cson-parser'
 
 readFile = (filePath, callback) ->
