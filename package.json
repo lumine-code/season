@@ -8,7 +8,7 @@
       "url": "http://github.com/atom/season/raw/master/LICENSE.md"
     }
   ],
-  "main": "./lib/cson.js",
+  "main": "./src/cson.js",
   "bin": {
     "csonc": "./bin/csonc"
   },
