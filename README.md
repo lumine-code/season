@@ -1,82 +1,39 @@
-# season - CSON Node module
+# @lumine-code/season
 
-Read and write CSON/JSON files seamlessly.
+Reads, writes, and parses CSON and JSON files for Lumine packages.
 
-## Installing
+## Features
+
+- **Unified file API**: reads and writes CSON or JSON according to the file extension.
+- **CSON parsing**: parses and stringifies CSON values through a compact CommonJS API.
+- **Source validation**: reports syntax errors with the originating path and location details.
+- **Optional caching**: caches parsed CSON values and exposes cache hit and miss counters.
+- **Duplicate detection**: optionally rejects duplicate CSON object keys.
+
+## Installation
 
 ```sh
-npm install season
+npm install @lumine-code/season
 ```
+
+## Usage
+
+```js
+const CSON = require('@lumine-code/season')
+
+const settings = CSON.readFileSync('settings.cson')
+CSON.writeFileSync('settings.json', settings)
+```
+
+Use `setCacheDir(directory)` to enable parsed CSON caching. The package creates missing parent directories when writing files or cache entries.
 
 ## Building
-  * Clone the repository
-  * Run `npm install`
-  * Run `grunt` to compile the CoffeeScript code
-  * Run `grunt test` to run the specs
 
-## Docs
-
-```coffeescript
-CSON = require 'season'
+```sh
+npm install
+npm test
 ```
 
-### CSON.setCacheDir(cacheDirectory)
+## Contributing
 
-Set the cache directory to use for storing compiled CSON files.
-
-`cacheDirectory` - Root directory path for storing compiled CSON.
-
-### CSON.stringify(object)
-
-Convert the object to a CSON string.
-
-`object` - The object to convert to CSON.
-
-Returns the CSON string representation of the given object.
-
-### CSON.readFile(objectPath, callback)
-
-Read the CSON or JSON object at the given path and return it to the callback
-once it is read and parsed.
-
-`objectPath` - The string path to a JSON or CSON object file.
-
-`callback` - The function to call with the error or object once the path
-             is read and parsed.
-
-### CSON.readFileSync(objectPath)
-
-Synchronous version of `CSON.readFile(objectPath, callback)`.
-
-Returns the object read from the path or throws an error if reading fails.
-
-### CSON.writeFile(objectPath, object, callback)
-
-Write the object to the given path as either JSON or CSON depending on the
-path's extension.
-
-`objectPath` - The string path to a JSON or CSON object file.
-
-`object` - The object to convert to a string and write to the path.
-
-`callback` - The function to with an error object on failures.
-
-### CSON.writeFileSync(objectPath, object)
-
-Synchronous version of `CSON.writeFile(objectPath, object, callback)`
-
-### CSON.isObjectPath(objectPath)
-
-Is the given path a valid object path?
-
-Returns `true` if the path has a `.json` or `.cson` file extension, `false`
-otherwise.
-
-### CSON.resolve(objectPath)
-
-Resolve the path to an existent file that has a `.json` or `.cson` extension.
-
-`objectPath` - The string path to a JSON or CSON object file with or without
-               an extension.
-
-Returns the path to an existent CSON or JSON file or `null` if none found.
+Got ideas to make this package better, found a bug, or want to help add new features? Just drop your thoughts on GitHub. Any feedback is welcome!

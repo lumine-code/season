@@ -1,7 +1,7 @@
 const crypto = require('crypto');
+const fs = require('fs');
 const path = require('path');
 
-const fs = require('fs-plus');
 let CSON = null; // defer until used
 
 let csonCache = null;
@@ -18,11 +18,38 @@ const getCachePath = function(cson) {
 
 const writeCacheFileSync = function(cachePath, object) {
   try {
-    return fs.writeFileSync(cachePath, JSON.stringify(object));
+    return writeFileSync(cachePath, JSON.stringify(object));
   } catch (error) {}
 };
 
-const writeCacheFile = (cachePath, object) => fs.writeFile(cachePath, JSON.stringify(object), function() {});
+const writeCacheFile = (cachePath, object) => writeFile(cachePath, JSON.stringify(object), function() {});
+
+const isFileSync = function(filePath) {
+  try {
+    return fs.statSync(filePath).isFile();
+  } catch (error) {
+    return false;
+  }
+};
+
+const writeFileSync = function(filePath, contents, options) {
+  fs.mkdirSync(path.dirname(filePath), {recursive: true});
+  return fs.writeFileSync(filePath, contents, options);
+};
+
+const writeFile = function(filePath, contents, options, callback) {
+  if (typeof options === 'function') {
+    callback = options;
+    options = undefined;
+  }
+  fs.mkdir(path.dirname(filePath), {recursive: true}, function(error) {
+    if (error) {
+      callback(error);
+      return;
+    }
+    fs.writeFile(filePath, contents, options, callback);
+  });
+};
 
 const parseObject = function(objectPath, contents, options) {
   if (path.extname(objectPath) === '.cson') {
@@ -110,13 +137,13 @@ module.exports = {
     if (objectPath == null) { objectPath = ''; }
     if (!objectPath) { return null; }
 
-    if (this.isObjectPath(objectPath) && fs.isFileSync(objectPath)) { return objectPath; }
+    if (this.isObjectPath(objectPath) && isFileSync(objectPath)) { return objectPath; }
 
     const jsonPath = `${objectPath}.json`;
-    if (fs.isFileSync(jsonPath)) { return jsonPath; }
+    if (isFileSync(jsonPath)) { return jsonPath; }
 
     const csonPath = `${objectPath}.cson`;
-    if (fs.isFileSync(csonPath)) { return csonPath; }
+    if (isFileSync(csonPath)) { return csonPath; }
 
     return null;
   },
@@ -134,7 +161,7 @@ module.exports = {
     if (contents.trim().length === 0) { return null; }
     if (csonCache && (path.extname(objectPath) === '.cson')) {
       cachePath = getCachePath(contents);
-      if (fs.isFileSync(cachePath)) {
+      if (isFileSync(cachePath)) {
         try {
           return parseCacheContents(fs.readFileSync(cachePath, 'utf8'));
         } catch (error) {}
@@ -201,12 +228,12 @@ module.exports = {
       return;
     }
 
-    return fs.writeFile(objectPath, `${contents}\n`, options, callback);
+    return writeFile(objectPath, `${contents}\n`, options, callback);
   },
 
   writeFileSync(objectPath, object, options) {
     if (options == null) { options = undefined; }
-    return fs.writeFileSync(objectPath, `${this.stringifyPath(objectPath, object)}\n`, options);
+    return writeFileSync(objectPath, `${this.stringifyPath(objectPath, object)}\n`, options);
   },
 
   stringifyPath(objectPath, object, visitor, space) {

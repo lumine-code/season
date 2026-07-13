@@ -1,8 +1,0 @@
-.npmignore
-*.coffee
-script/
-.DS_Store
-npm-debug.log
-.travis.yml
-appveyor.yml
-spec/

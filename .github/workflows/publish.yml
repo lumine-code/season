@@ -1,25 +1,30 @@
-name: Publish
+name: NPM Publish
 
 on:
   release:
-    types: [created]
+    types: [published]
   workflow_dispatch:
 
-env:
-  NODE_AUTH_TOKEN: ${{ secrets.NPM_PUBLISH_TOKEN }}
+permissions:
+  contents: read
 
 jobs:
-  build:
+  test:
+    uses: ./.github/workflows/ci.yml
+
+  publish:
+    needs: test
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - uses: actions/setup-node@v6
         with:
-          node-version: ${{ vars.NODE_VERSION }}
+          node-version: 24
           registry-url: https://registry.npmjs.org/
-      - name: Install Dependencies
-        run: npm ci
-      - name: Test
-        run: npm run test
-      - name: Publish
-        run: npm publish --access public
+      - run: npm ci
+      - run: npm publish --access public --provenance
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_PUBLISH_TOKEN }}

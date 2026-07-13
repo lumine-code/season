@@ -1,37 +1,35 @@
 {
-  "name": "@pulsar-edit/season",
-  "version": "6.0.2",
-  "description": "CSON utilities",
+  "name": "@lumine-code/season",
+  "version": "7.0.0",
+  "description": "Reads, writes, and parses CSON and JSON files for Lumine packages.",
   "license": "MIT",
   "main": "./src/cson.js",
   "scripts": {
-    "prepublish": "grunt clean lint coffee",
-    "test": "grunt test"
+    "test": "jasmine"
   },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/pulsar-edit/season.git"
+  "repository": "https://github.com/lumine-code/season",
+  "bugs": "https://github.com/lumine-code/season/issues",
+  "homepage": "https://github.com/lumine-code/season/",
+  "author": "lumine-code",
+  "publishConfig": {
+    "access": "public"
   },
-  "bugs": {
-    "url": "https://github.com/pulsar-edit/season/issues"
+  "engines": {
+    "node": ">=20"
   },
+  "files": [
+    "src"
+  ],
   "keywords": [
     "cson",
     "json",
     "CoffeeScript"
   ],
   "dependencies": {
-    "cson-parser": "^1.3.0",
-    "fs-plus": "^3.0.0"
+    "cson-parser": "^4.0.9"
   },
   "devDependencies": {
-    "jasmine-focused": "1.x",
-    "grunt-contrib-coffee": "~0.9.0",
-    "grunt-cli": "~0.1.8",
-    "grunt": "~0.4.1",
-    "grunt-shell": "~0.2.2",
-    "grunt-coffeelint": "0.0.6",
-    "temp": "^0.9.4",
-    "rimraf": "~2.1.4"
+    "coffeescript": "2.7.0",
+    "jasmine": "^6.3.0"
   }
 }

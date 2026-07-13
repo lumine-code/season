@@ -1,14 +1,14 @@
 path = require 'path'
-fs = require 'fs-plus'
-temp = require 'temp'
+fs = require 'fs'
+temp = require './helpers/temp'
 CSON = require '../src/cson'
 parser = require 'cson-parser'
 
 readFile = (filePath, callback) ->
   done = jasmine.createSpy('readFile callback')
   expect(CSON.readFile(filePath, done)).toBeUndefined()
-  waitsFor -> done.callCount is 1
-  runs -> callback(done.argsForCall[0]...)
+  waitsFor -> done.calls.count() is 1
+  runs -> callback(done.calls.argsFor(0)...)
 
 describe "CSON", ->
   beforeEach ->
@@ -34,13 +34,13 @@ describe "CSON", ->
 
     describe "when formatting a string", ->
       it "returns formatted CSON", ->
-        expect(CSON.stringify(a: 'b')).toBe 'a: "b"'
+        expect(CSON.stringify(a: 'b')).toBe "a: 'b'"
 
       it "doesn't escape single quotes", ->
         expect(CSON.stringify(a: "'b'")).toBe '''a: "'b'"'''
 
       it "escapes double quotes", ->
-        expect(CSON.stringify(a: '"b"')).toBe '''a: "\\"b\\""'''
+        expect(CSON.stringify(a: '"b"')).toBe "a: '\"b\"'"
 
       it "turns strings with newlines into triple-apostrophe strings", ->
         expect(CSON.stringify("a\nb")).toBe """'''
@@ -80,12 +80,12 @@ describe "CSON", ->
       it "returns formatted CSON", ->
         expect(CSON.stringify(a: ['b'])).toBe '''
           a: [
-            "b"
+            'b'
           ]
         '''
         expect(CSON.stringify(a: ['b', 4])).toBe '''
           a: [
-            "b"
+            'b'
             4
           ]
         '''
@@ -93,20 +93,20 @@ describe "CSON", ->
       describe "when the array has an undefined value", ->
         it "formats the undefined value as null", ->
           expect(CSON.stringify(['a', undefined, 'b'])).toBe '''[
-            "a"
+            'a'
             null
-            "b"
+            'b'
           ]'''
 
       describe "when the array contains an object", ->
         it "wraps the object in {}", ->
           expect(CSON.stringify([{a:'b', a1: 'b1'}, {c: 'd'}])).toBe '''[
             {
-              a: "b"
-              a1: "b1"
+              a: 'b'
+              a1: 'b1'
             }
             {
-              c: "d"
+              c: 'd'
             }
           ]'''
 
@@ -118,13 +118,13 @@ describe "CSON", ->
       it "returns formatted CSON", ->
         expect(CSON.stringify(a: {b: 'c'})).toBe '''
           a:
-            b: "c"
+            b: 'c'
         '''
         expect(CSON.stringify(a:{})).toBe 'a: {}'
         expect(CSON.stringify(a:[])).toBe 'a: []'
 
       it "escapes object keys", ->
-        expect(CSON.stringify('\\t': 3)).toBe '"\\\\t": 3'
+        expect(CSON.stringify('\\t': 3)).toBe "'\\\\t': 3"
 
   describe "when converting back to an object", ->
     it "produces the original object", ->
@@ -187,7 +187,7 @@ describe "CSON", ->
         CSON.writeFile(jsonPath, object, callback)
 
         waitsFor ->
-          callback.callCount is 1
+          callback.calls.count() is 1
 
         runs ->
           expect(CSON.readFileSync(jsonPath)).toEqual object
@@ -200,7 +200,7 @@ describe "CSON", ->
         CSON.writeFile(csonPath, object, callback)
 
         waitsFor ->
-          callback.callCount is 1
+          callback.calls.count() is 1
 
         runs ->
           expect(CSON.readFileSync(csonPath)).toEqual object
@@ -213,19 +213,19 @@ describe "CSON", ->
         CSON.setCacheDir(cacheDir)
         CSON.resetCacheStats()
         CSONParser = require 'cson-parser'
-        spyOn(CSONParser, 'parse').andCallThrough()
+        spyOn(CSONParser, 'parse').and.callThrough()
 
         expect(CSON.getCacheHits()).toBe 0
         expect(CSON.getCacheMisses()).toBe 0
 
         expect(CSON.readFileSync(samplePath)).toEqual {a: 1, b: c: true}
-        expect(CSONParser.parse.callCount).toBe 1
+        expect(CSONParser.parse.calls.count()).toBe 1
         expect(CSON.getCacheHits()).toBe 0
         expect(CSON.getCacheMisses()).toBe 1
 
-        CSONParser.parse.reset()
+        CSONParser.parse.calls.reset()
         expect(CSON.readFileSync(samplePath)).toEqual {a: 1, b: c: true}
-        expect(CSONParser.parse.callCount).toBe 0
+        expect(CSONParser.parse.calls.count()).toBe 0
         expect(CSON.getCacheHits()).toBe 1
         expect(CSON.getCacheMisses()).toBe 1
 
@@ -236,7 +236,7 @@ describe "CSON", ->
         CSON.setCacheDir(cacheDir)
         CSON.resetCacheStats()
         CSONParser = require 'cson-parser'
-        spyOn(CSONParser, 'parse').andCallThrough()
+        spyOn(CSONParser, 'parse').and.callThrough()
 
         expect(CSON.getCacheHits()).toBe 0
         expect(CSON.getCacheMisses()).toBe 0
@@ -246,16 +246,16 @@ describe "CSON", ->
         waitsFor -> sample?
         runs ->
           expect(sample).toEqual {a: 1, b: c: true}
-          expect(CSONParser.parse.callCount).toBe 1
+          expect(CSONParser.parse.calls.count()).toBe 1
           expect(CSON.getCacheHits()).toBe 0
           expect(CSON.getCacheMisses()).toBe 1
 
-          CSONParser.parse.reset()
+          CSONParser.parse.calls.reset()
           sample = null
           CSON.readFile samplePath, (error, object) -> sample = object
         waitsFor -> sample?
         runs ->
-          expect(CSONParser.parse.callCount).toBe 0
+          expect(CSONParser.parse.calls.count()).toBe 0
           expect(CSON.getCacheHits()).toBe 1
           expect(CSON.getCacheMisses()).toBe 1
 
@@ -303,7 +303,7 @@ describe "CSON", ->
       it "throws errors if objects contain duplicate keys", ->
         expect(->
           CSON.readFileSync(path.join(__dirname, 'fixtures', 'duplicate-keys.cson'), allowDuplicateKeys: false)
-        ).toThrow("Duplicate key 'foo'")
+        ).toThrowError("Duplicate key 'foo'")
 
         expect(CSON.readFileSync(path.join(__dirname, 'fixtures', 'sample.cson'), allowDuplicateKeys: false)).toEqual({
           a: 1, b: {c: true}
@@ -433,26 +433,26 @@ describe "CSON", ->
 
         runs ->
           expect(called).toBe 1
-          expect(uncaughtHandler.callCount).toBe 1
+          expect(uncaughtHandler.calls.count()).toBe 1
 
   describe "when options are provided for the underlying fs call", ->
 
     it "passes options to the readFileSync call", ->
-      spyOn(fs, 'readFileSync').andReturn "{}"
-      spyOn(parser, 'parse').andCallThrough()
+      spyOn(fs, 'readFileSync').and.returnValue "{}"
+      spyOn(parser, 'parse').and.callThrough()
 
       CSON.readFileSync("/foo/blarg.cson", {encoding: 'cuneiform', allowDuplicateKeys: false})
 
       expect(fs.readFileSync).toHaveBeenCalledWith "/foo/blarg.cson", {encoding: 'cuneiform'}
-      expect(parser.parse.calls[0].args[0]).toEqual "{}"
-      expect(typeof parser.parse.calls[0].args[1]).toEqual "function"
+      expect(parser.parse.calls.argsFor(0)[0]).toEqual "{}"
+      expect(typeof parser.parse.calls.argsFor(0)[1]).toEqual "function"
 
     it "passes options to the readFile call", ->
       called = 0
       callback = -> called++
 
-      spyOn(parser, 'parse').andCallThrough()
-      spyOn(fs, 'readFile').andCallFake (filePath, fsOptions, callback) ->
+      spyOn(parser, 'parse').and.callThrough()
+      spyOn(fs, 'readFile').and.callFake (filePath, fsOptions, callback) ->
         expect(filePath).toEqual "/bar/blarg.cson"
         expect(fsOptions).toEqual {encoding: 'cuneiform'}
 
@@ -462,28 +462,33 @@ describe "CSON", ->
       CSON.readFile("/bar/blarg.cson", {encoding: 'cuneiform', allowDuplicateKeys: false}, cb)
 
       expect(fs.readFile).toHaveBeenCalled()
-      expect(parser.parse.calls[0].args[0]).toEqual "{}"
-      expect(typeof parser.parse.calls[0].args[1]).toEqual "function"
+      expect(parser.parse.calls.argsFor(0)[0]).toEqual "{}"
+      expect(typeof parser.parse.calls.argsFor(0)[1]).toEqual "function"
       expect(cb).toHaveBeenCalledWith null, {}
 
     it "passes options to the writeFileSync call", ->
-      spyOn(fs, 'writeFileSync').andCallFake (filePath, payload, fileOptions) ->
-        expect(filePath).toEqual "/stuff/wat.cson"
+      filePath = path.join(temp.mkdirSync('season-options-'), 'stuff.cson')
+      spyOn(fs, 'writeFileSync').and.callFake (writtenPath, payload, fileOptions) ->
+        expect(writtenPath).toEqual filePath
         expect(fileOptions).toEqual {mode: 0o755}
 
-      CSON.writeFileSync("/stuff/wat.cson", {data: 'yep'}, {mode: 0o755})
+      CSON.writeFileSync(filePath, {data: 'yep'}, {mode: 0o755})
 
       expect(fs.writeFileSync).toHaveBeenCalled()
-      expect(fs.writeFileSync.calls[0].args[2]).toEqual {mode: 0o755}
+      expect(fs.writeFileSync.calls.argsFor(0)[2]).toEqual {mode: 0o755}
 
     it "passes options to the writeFile call", ->
-      spyOn(fs, 'writeFile').andCallFake (filePath, payload, fileOptions, callback) ->
-        expect(filePath).toEqual "/eh/stuff.cson"
+      filePath = path.join(temp.mkdirSync('season-options-'), 'stuff.cson')
+      spyOn(fs, 'writeFile').and.callFake (writtenPath, payload, fileOptions, callback) ->
+        expect(writtenPath).toEqual filePath
         expect(fileOptions).toEqual {flag: 'x'}
         callback(null)
 
       cb = jasmine.createSpy 'callback'
-      CSON.writeFile("/eh/stuff.cson", {}, {flag: 'x'}, cb)
+      CSON.writeFile(filePath, {}, {flag: 'x'}, cb)
 
-      expect(fs.writeFile).toHaveBeenCalled()
-      expect(cb).toHaveBeenCalledWith null
+      waitsFor -> fs.writeFile.calls.count() is 1
+
+      runs ->
+        expect(fs.writeFile).toHaveBeenCalled()
+        expect(cb).toHaveBeenCalledWith null
