@@ -1,14 +1,12 @@
 {
   "spec_dir": "spec",
   "spec_files": [
-    "**/*[sS]pec.coffee"
+    "**/*[sS]pec.js"
   ],
   "helpers": [
     "helpers/legacy-jasmine.js"
   ],
-  "requires": [
-    "./node_modules/coffeescript/register.js"
-  ],
+  "requires": [],
   "env": {
     "forbidDuplicateNames": false,
     "stopSpecOnExpectationFailure": false,
