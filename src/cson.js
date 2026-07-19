@@ -3,6 +3,7 @@ const fs = require('fs');
 const path = require('path');
 
 let CSON = null; // defer until used
+let JSONC = null; // defer until used
 
 let csonCache = null;
 
@@ -66,7 +67,50 @@ const parseObject = function(objectPath, contents, options) {
       }
     }
   } else {
-    return JSON.parse(contents);
+    if (JSONC == null) { JSONC = require('jsonc-parser'); }
+
+    const errors = [];
+    const parsed = JSONC.parse(contents, errors, {
+      allowEmptyContent: true,
+      allowTrailingComma: true
+    });
+
+    if (errors.length > 0) {
+      const parseError = errors[0];
+      const prefix = contents.slice(0, parseError.offset);
+      const lines = prefix.split('\n');
+      const line = lines.length - 1;
+      const column = lines[lines.length - 1].length;
+      const error = new SyntaxError(
+        `Syntax error on line ${line + 1}, column ${column + 1}: ${JSONC.printParseErrorCode(parseError.error)}`
+      );
+      error.location = {first_line: line, first_column: column};
+      throw error;
+    }
+
+    if ((options != null ? options.allowDuplicateKeys : undefined) === false) {
+      const keySets = [];
+      let duplicateKey = null;
+      JSONC.visit(contents, {
+        onObjectBegin() {
+          keySets.push(new Set());
+        },
+        onObjectProperty(key) {
+          const keys = keySets[keySets.length - 1];
+          if (keys.has(key)) {
+            duplicateKey = key;
+          } else {
+            keys.add(key);
+          }
+        },
+        onObjectEnd() {
+          keySets.pop();
+        }
+      }, {allowTrailingComma: true});
+      if (duplicateKey != null) { throw new Error(`Duplicate key '${duplicateKey}'`); }
+    }
+
+    return parsed === undefined ? null : parsed;
   }
 };
 
@@ -130,7 +174,7 @@ module.exports = {
     if (!objectPath) { return false; }
 
     const extension = path.extname(objectPath);
-    return (extension === '.cson') || (extension === '.json');
+    return (extension === '.cson') || (extension === '.json') || (extension === '.jsonc');
   },
 
   resolve(objectPath) {
@@ -141,6 +185,9 @@ module.exports = {
 
     const jsonPath = `${objectPath}.json`;
     if (isFileSync(jsonPath)) { return jsonPath; }
+
+    const jsoncPath = `${objectPath}.jsonc`;
+    if (isFileSync(jsoncPath)) { return jsoncPath; }
 
     const csonPath = `${objectPath}.cson`;
     if (isFileSync(csonPath)) { return csonPath; }

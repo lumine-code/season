@@ -1,0 +1,5 @@
+{
+  // Lumine treats user-facing .json files as JSONC.
+  "a": 1,
+  "b": true,
+}

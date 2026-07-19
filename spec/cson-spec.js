@@ -223,6 +223,7 @@ describe("CSON", function() {
   describe(".isObjectPath(objectPath)", function() {
     return it("returns true if the path has an object extension", function() {
       expect(CSON.isObjectPath('/test2.json')).toBe(true);
+      expect(CSON.isObjectPath('/test3.jsonc')).toBe(true);
       expect(CSON.isObjectPath('/a/b.cson')).toBe(true);
       expect(CSON.isObjectPath()).toBe(false);
       expect(CSON.isObjectPath(null)).toBe(false);
@@ -232,20 +233,24 @@ describe("CSON", function() {
   });
   describe(".resolve(objectPath)", function() {
     return it("returns the path to the object file", function() {
-      var file1, file2, file3, folder1, objectDir;
+      var file1, file2, file3, file4, folder1, objectDir;
       objectDir = temp.mkdirSync('season-object-dir-');
       file1 = path.join(objectDir, 'file1.json');
       file2 = path.join(objectDir, 'file2.cson');
       file3 = path.join(objectDir, 'file3.json');
+      file4 = path.join(objectDir, 'file4.jsonc');
       folder1 = path.join(objectDir, 'folder1.json');
       fs.mkdirSync(folder1);
       fs.writeFileSync(file1, '{}');
       fs.writeFileSync(file2, '{}');
       fs.writeFileSync(file3, '{}');
+      fs.writeFileSync(file4, '{}');
       expect(CSON.resolve(file1)).toBe(file1);
       expect(CSON.resolve(file2)).toBe(file2);
       expect(CSON.resolve(file3)).toBe(file3);
-      expect(CSON.resolve(path.join(objectDir, 'file4'))).toBe(null);
+      expect(CSON.resolve(file4)).toBe(file4);
+      expect(CSON.resolve(path.join(objectDir, 'file4'))).toBe(file4);
+      expect(CSON.resolve(path.join(objectDir, 'file5'))).toBe(null);
       expect(CSON.resolve(folder1)).toBe(null);
       expect(CSON.resolve()).toBe(null);
       expect(CSON.resolve(null)).toBe(null);
@@ -373,6 +378,21 @@ describe("CSON", function() {
       expect(CSON.readFileSync(path.join(__dirname, 'fixtures', 'empty-line.cson'))).toBeNull();
       return expect(CSON.readFileSync(path.join(__dirname, 'fixtures', 'empty-line.json'))).toBeNull();
     });
+    it("reads comments and trailing commas from .json and .jsonc files", function() {
+      expect(CSON.readFileSync(path.join(__dirname, 'fixtures', 'comments.json'))).toEqual({
+        a: 1,
+        b: true
+      });
+      return expect(CSON.readFileSync(path.join(__dirname, 'fixtures', 'sample.jsonc'))).toEqual({
+        a: 1,
+        b: {
+          c: true
+        }
+      });
+    });
+    it("returns null for JSONC files that are all comments", function() {
+      return expect(CSON.readFileSync(path.join(__dirname, 'fixtures', 'comments-only.jsonc'))).toBeNull();
+    });
     it("throws errors for invalid .cson files", function() {
       var error, errorPath, parseError;
       errorPath = path.join(__dirname, 'fixtures', 'syntax-error.cson');
@@ -423,6 +443,11 @@ describe("CSON", function() {
             c: true
           }
         });
+        expect(function() {
+          return CSON.readFileSync(path.join(__dirname, 'fixtures', 'duplicate-keys.json'), {
+            allowDuplicateKeys: false
+          });
+        }).toThrowError("Duplicate key 'foo'");
         return expect(CSON.readFileSync(path.join(__dirname, 'fixtures', 'duplicate-keys.cson'))).toEqual({
           foo: 3,
           bar: 2
@@ -458,7 +483,8 @@ describe("CSON", function() {
         return expect(content).toBeNull();
       };
       readFile(path.join(__dirname, 'fixtures', 'single-comment.cson'), callback);
-      return readFile(path.join(__dirname, 'fixtures', 'multi-comment.cson'), callback);
+      readFile(path.join(__dirname, 'fixtures', 'multi-comment.cson'), callback);
+      return readFile(path.join(__dirname, 'fixtures', 'comments-only.jsonc'), callback);
     });
     it("calls back with an error for invalid files", function() {
       var callback, done;

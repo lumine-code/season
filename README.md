@@ -1,10 +1,11 @@
 # @lumine-code/season
 
-Reads, writes, and parses CSON and JSON files for Lumine packages.
+Reads, writes, and parses CSON, JSON, and JSONC files for Lumine packages.
 
 ## Features
 
-- **Unified file API**: reads and writes CSON or JSON according to the file extension.
+- **Unified file API**: reads and writes CSON, JSON, or JSONC according to the file extension.
+- **Commented JSON**: accepts JavaScript-style comments and trailing commas in `.json` and `.jsonc` files.
 - **CSON parsing**: parses and stringifies CSON values through a compact CommonJS API.
 - **Source validation**: reports syntax errors with the originating path and location details.
 - **Optional caching**: caches parsed CSON values and exposes cache hit and miss counters.
@@ -21,7 +22,7 @@ npm install @lumine-code/season
 ```js
 const CSON = require('@lumine-code/season')
 
-const settings = CSON.readFileSync('settings.cson')
+const settings = CSON.readFileSync('settings.json')
 CSON.writeFileSync('settings.json', settings)
 ```
 

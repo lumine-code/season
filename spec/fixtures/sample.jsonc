@@ -1,0 +1,7 @@
+{
+  // JSONC supports comments and trailing commas.
+  "a": 1,
+  "b": {
+    "c": true,
+  },
+}
