@@ -1,7 +1,7 @@
 {
   "name": "@lumine-code/season",
   "version": "7.0.0",
-  "description": "Reads, writes, and parses CSON, JSON, and JSONC files for Lumine packages.",
+  "description": "Reads, writes, and parses CSON, JSON, and JSONC files.",
   "license": "MIT",
   "main": "./src/cson.js",
   "scripts": {

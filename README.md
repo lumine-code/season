@@ -1,6 +1,6 @@
-# @lumine-code/season
+# season
 
-Reads, writes, and parses CSON, JSON, and JSONC files for Lumine packages.
+Reads, writes, and parses CSON, JSON, and JSONC files.
 
 ## Features
 
