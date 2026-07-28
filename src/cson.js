@@ -54,7 +54,7 @@ const writeFile = function(filePath, contents, options, callback) {
 
 const parseObject = function(objectPath, contents, options) {
   if (path.extname(objectPath) === '.cson') {
-    if (CSON == null) { CSON = require('cson-parser'); }
+    if (CSON == null) { CSON = require('./cson-parser'); }
     try {
       const parsed = CSON.parse(contents, (options != null ? options.allowDuplicateKeys : undefined) === false ? detectDuplicateKeys : undefined);
       stats.misses++;
@@ -293,12 +293,12 @@ module.exports = {
 
   stringify(object, visitor, space) {
     if (space == null) { space = 2; }
-    if (CSON == null) { CSON = require('cson-parser'); }
+    if (CSON == null) { CSON = require('./cson-parser'); }
     return CSON.stringify(object, visitor, space);
   },
 
   parse(str, reviver) {
-    if (CSON == null) { CSON = require('cson-parser'); }
+    if (CSON == null) { CSON = require('./cson-parser'); }
     return CSON.parse(str, reviver);
   },
 

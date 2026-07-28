@@ -7,6 +7,7 @@ Reads, writes, and parses CSON, JSON, and JSONC files.
 - **Unified file API**: reads and writes CSON, JSON, or JSONC according to the file extension.
 - **Commented JSON**: accepts JavaScript-style comments and trailing commas in `.json` and `.jsonc` files.
 - **CSON parsing**: parses and stringifies CSON values through a compact CommonJS API.
+- **No dynamic evaluation**: decodes CSON string and regex literals without eval or the vm module, so Electron renderers load it without deprecation warnings.
 - **Source validation**: reports syntax errors with the originating path and location details.
 - **Optional caching**: caches parsed CSON values and exposes cache hit and miss counters.
 - **Duplicate detection**: optionally rejects duplicate CSON object keys.

@@ -8,7 +8,7 @@ temp = require('./helpers/temp');
 
 CSON = require('../src/cson');
 
-parser = require('cson-parser');
+parser = require('../src/cson-parser');
 
 readFile = function(filePath, callback) {
   var done;
@@ -208,7 +208,7 @@ describe("CSON", function() {
         }
       };
       cson = CSON.stringify(object);
-      CSONParser = require('cson-parser');
+      CSONParser = require('../src/cson-parser');
       evaledObject = CSONParser.parse(cson);
       return expect(evaledObject).toEqual(object);
     });
@@ -301,7 +301,7 @@ describe("CSON", function() {
         cacheDir = temp.mkdirSync('cache-dir');
         CSON.setCacheDir(cacheDir);
         CSON.resetCacheStats();
-        CSONParser = require('cson-parser');
+        CSONParser = require('../src/cson-parser');
         spyOn(CSONParser, 'parse').and.callThrough();
         expect(CSON.getCacheHits()).toBe(0);
         expect(CSON.getCacheMisses()).toBe(0);
@@ -333,7 +333,7 @@ describe("CSON", function() {
         cacheDir = temp.mkdirSync('cache-dir');
         CSON.setCacheDir(cacheDir);
         CSON.resetCacheStats();
-        CSONParser = require('cson-parser');
+        CSONParser = require('../src/cson-parser');
         spyOn(CSONParser, 'parse').and.callThrough();
         expect(CSON.getCacheHits()).toBe(0);
         expect(CSON.getCacheMisses()).toBe(0);
