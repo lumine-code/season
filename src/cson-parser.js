@@ -30,12 +30,12 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-'use strict';
+"use strict";
 
 // Vendored from cson-parser@4.0.9.
 
-const stringify = require('./stringify');
-const parse = require('./parse');
+const stringify = require("./stringify");
+const parse = require("./parse");
 
 module.exports = {
   stringify,

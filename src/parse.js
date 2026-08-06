@@ -30,7 +30,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-'use strict';
+"use strict";
 
 // Vendored from cson-parser@4.0.9 with two changes: string and regex
 // literals are decoded in plain JavaScript instead of being evaluated with
@@ -38,7 +38,7 @@
 // node transforms understand coffeescript 2 (upstream ran on a nested
 // coffeescript 1). The compiler is loaded through its core module because
 // the coffeescript package entry point also requires vm eagerly.
-const { nodes } = require('coffeescript/lib/coffeescript/coffeescript');
+const { nodes } = require("coffeescript/lib/coffeescript/coffeescript");
 
 function defaultReviver(key, value) {
   return value;
@@ -57,8 +57,8 @@ function syntaxErrorMessage(csNode, msg) {
   const ref = csNode.locationData;
   const lineIdx = ref.first_line;
   const columnIdx = ref.first_column;
-  let line = '';
-  let column = '';
+  let line = "";
+  let column = "";
   if (lineIdx != null) {
     line = lineIdx + 1;
   }
@@ -69,13 +69,13 @@ function syntaxErrorMessage(csNode, msg) {
 }
 
 const stringEscapes = {
-  0: '\0',
-  b: '\b',
-  f: '\f',
-  n: '\n',
-  r: '\r',
-  t: '\t',
-  v: '\v',
+  0: "\0",
+  b: "\b",
+  f: "\f",
+  n: "\n",
+  r: "\r",
+  t: "\t",
+  v: "\v",
 };
 
 // The literal is a valid JavaScript literal by the time it gets here: the
@@ -91,30 +91,30 @@ function parseStringLiteral(literal) {
     throw new SyntaxError(`Invalid string literal: ${literal}`);
   }
   const body = literal.slice(1, -1);
-  let result = '';
+  let result = "";
   let i = 0;
   while (i < body.length) {
     const char = body.charAt(i);
     i += 1;
-    if (char !== '\\') {
+    if (char !== "\\") {
       result += char;
       continue;
     }
     const next = body.charAt(i);
     i += 1;
-    if (next === '') {
+    if (next === "") {
       throw new SyntaxError(`Invalid string literal: ${literal}`);
-    } else if (next === 'x' || next === 'u') {
-      if (next === 'u' && body.charAt(i) === '{') {
-        const end = body.indexOf('}', i + 1);
-        const hex = end === -1 ? '' : body.slice(i + 1, end);
+    } else if (next === "x" || next === "u") {
+      if (next === "u" && body.charAt(i) === "{") {
+        const end = body.indexOf("}", i + 1);
+        const hex = end === -1 ? "" : body.slice(i + 1, end);
         if (!/^[0-9a-fA-F]+$/.test(hex)) {
           throw new SyntaxError(`Invalid Unicode escape: ${literal}`);
         }
         i = end + 1;
         result += String.fromCodePoint(parseInt(hex, 16));
       } else {
-        const width = next === 'x' ? 2 : 4;
+        const width = next === "x" ? 2 : 4;
         const hex = body.slice(i, i + width);
         if (hex.length !== width || !/^[0-9a-fA-F]+$/.test(hex)) {
           throw new SyntaxError(`Invalid ${next} escape: ${literal}`);
@@ -124,13 +124,13 @@ function parseStringLiteral(literal) {
       }
     } else if (Object.prototype.hasOwnProperty.call(stringEscapes, next)) {
       result += stringEscapes[next];
-    } else if (next === '\r') {
+    } else if (next === "\r") {
       // A backslash before a line terminator is a line continuation; \r\n
       // counts as one terminator.
-      if (body.charAt(i) === '\n') {
+      if (body.charAt(i) === "\n") {
         i += 1;
       }
-    } else if (next !== '\n' && next !== '\u2028' && next !== '\u2029') {
+    } else if (next !== "\n" && next !== "\u2028" && next !== "\u2029") {
       result += next;
     }
   }
@@ -138,8 +138,8 @@ function parseStringLiteral(literal) {
 }
 
 function parseRegExpLiteral(literal) {
-  const lastSlash = literal.lastIndexOf('/');
-  if (literal.charAt(0) !== '/' || lastSlash < 1) {
+  const lastSlash = literal.lastIndexOf("/");
+  if (literal.charAt(0) !== "/" || lastSlash < 1) {
     throw new SyntaxError(`Invalid regular expression literal: ${literal}`);
   }
   return new RegExp(literal.slice(1, lastSlash), literal.slice(lastSlash + 1));
@@ -147,7 +147,7 @@ function parseRegExpLiteral(literal) {
 
 function transformKey(csNode) {
   const type = nodeTypeString(csNode);
-  if (type !== 'Value') {
+  if (type !== "Value") {
     throw new SyntaxError(syntaxErrorMessage(csNode, `${type} used as key`));
   }
   const value = csNode.base.value;
@@ -164,12 +164,12 @@ function transformKey(csNode) {
 // PassthroughLiteral expression; coffeescript 1 dropped comments from the
 // AST, so they must not count as values here either.
 function withoutComments(expressions) {
-  return (expressions || []).filter(function(expression) {
+  return (expressions || []).filter(function (expression) {
     return !(
-      expression.constructor.name === 'Value' &&
+      expression.constructor.name === "Value" &&
       expression.base != null &&
-      expression.base.constructor.name === 'PassthroughLiteral' &&
-      expression.base.value === ''
+      expression.base.constructor.name === "PassthroughLiteral" &&
+      expression.base.value === ""
     );
   });
 }
@@ -183,9 +183,7 @@ const nodeTransforms = {
   Block: function Block(node, transformNode) {
     const expressions = withoutComments(node.expressions);
     if (expressions.length !== 1) {
-      throw new SyntaxError(
-        syntaxErrorMessage(node, 'One top level value expected')
-      );
+      throw new SyntaxError(syntaxErrorMessage(node, "One top level value expected"));
     }
     return transformNode(expressions[0]);
   },
@@ -193,10 +191,10 @@ const nodeTransforms = {
     return transformNode(node.base);
   },
   Bool: function Bool(node) {
-    return node.val === 'true';
+    return node.val === "true";
   },
   BooleanLiteral: function BooleanLiteral(node) {
-    return node.value === 'true';
+    return node.value === "true";
   },
   Null: function Null() {
     return null;
@@ -211,13 +209,13 @@ const nodeTransforms = {
         case "'":
         case '"':
           return parseStringLiteral(value);
-        case '/':
+        case "/":
           return parseRegExpLiteral(value);
         default:
           return JSON.parse(value);
       }
     } catch (error) {
-      throw new SyntaxError(syntaxErrorMessage(node, error.message));
+      throw new SyntaxError(syntaxErrorMessage(node, error.message), { cause: error });
     }
   },
   NumberLiteral: function NumberLiteral(node) {
@@ -250,42 +248,42 @@ const nodeTransforms = {
       const left = transformNode(node.first);
       const right = transformNode(node.second);
       switch (node.operator) {
-        case '-':
+        case "-":
           return left - right;
-        case '+':
+        case "+":
           return left + right;
-        case '*':
+        case "*":
           return left * right;
-        case '/':
+        case "/":
           return left / right;
-        case '%':
+        case "%":
           return left % right;
-        case '&':
+        case "&":
           return left & right;
-        case '|':
+        case "|":
           return left | right;
-        case '^':
+        case "^":
           return left ^ right;
-        case '<<':
+        case "<<":
           return left << right;
-        case '>>>':
+        case ">>>":
           return left >>> right;
-        case '>>':
+        case ">>":
           return left >> right;
         default:
           throw new SyntaxError(
-            syntaxErrorMessage(node, `Unknown binary operator ${node.operator}`)
+            syntaxErrorMessage(node, `Unknown binary operator ${node.operator}`),
           );
       }
     } else {
       switch (node.operator) {
-        case '-':
+        case "-":
           return -transformNode(node.first);
-        case '~':
+        case "~":
           return ~transformNode(node.first);
         default:
           throw new SyntaxError(
-            syntaxErrorMessage(node, `Unknown unary operator ${node.operator}`)
+            syntaxErrorMessage(node, `Unknown unary operator ${node.operator}`),
           );
       }
     }
@@ -294,7 +292,7 @@ const nodeTransforms = {
     const expressions = withoutComments(node.body.expressions);
     if (expressions.length !== 1) {
       throw new SyntaxError(
-        syntaxErrorMessage(node, 'Parenthesis may only contain one expression')
+        syntaxErrorMessage(node, "Parenthesis may only contain one expression"),
       );
     }
     return transformNode(expressions[0]);
@@ -313,16 +311,16 @@ function parse(source, reviver) {
     }
     return transform(csNode, transformNode, reviver);
   }
-  if (typeof reviver !== 'function') {
-    throw new TypeError('reviver has to be a function');
+  if (typeof reviver !== "function") {
+    throw new TypeError("reviver has to be a function");
   }
-  const coffeeAst = nodes(source.toString('utf8'));
+  const coffeeAst = nodes(source.toString("utf8"));
   const parsed = transformNode(coffeeAst);
   if (reviver === defaultReviver) {
     return parsed;
   }
   const contextObj = {};
-  contextObj[''] = parsed;
-  return reviver.call(contextObj, '', parsed);
+  contextObj[""] = parsed;
+  return reviver.call(contextObj, "", parsed);
 }
 module.exports = parse;

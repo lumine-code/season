@@ -30,13 +30,13 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-'use strict';
+"use strict";
 
 // Vendored from cson-parser@4.0.9.
 
 const jsIdentifierRE = /^[a-z_$][a-z0-9_$]*$/i;
 const doubleQuotesRE = /''/g;
-const SPACES = '          ';
+const SPACES = "          ";
 
 function contains(str1, str2) {
   return str1.indexOf(str2) >= 0;
@@ -47,14 +47,14 @@ function newlineWrap(str) {
 }
 
 function isObject(obj) {
-  return typeof obj === 'object' && obj !== null && !Array.isArray(obj);
+  return typeof obj === "object" && obj !== null && !Array.isArray(obj);
 }
 
 function parseIndent(indent) {
   switch (typeof indent) {
-    case 'string':
+    case "string":
       return indent.slice(0, 10);
-    case 'number': {
+    case "number": {
       const n = Math.max(0, Math.min(10, Math.floor(indent)));
       return SPACES.slice(0, n);
     }
@@ -68,31 +68,26 @@ function indentLine(indent, line) {
 }
 
 function indentLines(indent, str) {
-  if (str === '') {
+  if (str === "") {
     return str;
   }
-  return str.split('\n').map(indentLine.bind(null, indent)).join('\n');
+  return str.split("\n").map(indentLine.bind(null, indent)).join("\n");
 }
 
 function singleQuoteStringify(str) {
-  return `'${JSON.stringify(str)
-    .slice(1, -1)
-    .replace(/\\"/g, '"')
-    .replace(/'/g, "\\'")}'`;
+  return `'${JSON.stringify(str).slice(1, -1).replace(/\\"/g, '"').replace(/'/g, "\\'")}'`;
 }
 
 function quoteType(str) {
-  return contains(str, "'") && !contains(str, '"') ? 'double' : 'single';
+  return contains(str, "'") && !contains(str, '"') ? "double" : "single";
 }
 
 function onelineStringify(str) {
-  return (quoteType(str) === 'single' ? singleQuoteStringify : JSON.stringify)(
-    str
-  );
+  return (quoteType(str) === "single" ? singleQuoteStringify : JSON.stringify)(str);
 }
 
 function buildKeyPairs(visitNode, indent, obj) {
-  return Object.keys(obj).map(key => {
+  return Object.keys(obj).map((key) => {
     const value = obj[key];
     if (!key.match(jsIdentifierRE)) {
       key = onelineStringify(key);
@@ -111,14 +106,14 @@ function buildKeyPairs(visitNode, indent, obj) {
 }
 
 function visitArray(visitNode, indent, arr) {
-  const items = arr.map(value => {
+  const items = arr.map((value) => {
     return visitNode(value, {
       bracesRequired: true,
     });
   });
   const serializedItems = indent
-    ? newlineWrap(indentLines(indent, items.join('\n')))
-    : items.join(',');
+    ? newlineWrap(indentLines(indent, items.join("\n")))
+    : items.join(",");
   return `[${serializedItems}]`;
 }
 
@@ -126,17 +121,17 @@ function visitObject(visitNode, indent, obj, arg) {
   const bracesRequired = arg.bracesRequired;
   const keypairs = buildKeyPairs(visitNode, indent, obj);
 
-  if (keypairs.length === 0) return '{}';
+  if (keypairs.length === 0) return "{}";
 
   if (indent) {
-    const keyPairLines = keypairs.join('\n');
+    const keyPairLines = keypairs.join("\n");
     if (bracesRequired) {
       return `{${newlineWrap(indentLines(indent, keyPairLines))}}`;
     }
     return keyPairLines;
   }
 
-  const serializedKeyPairs = keypairs.join(',');
+  const serializedKeyPairs = keypairs.join(",");
   if (bracesRequired) {
     return `{${serializedKeyPairs}}`;
   }
@@ -144,16 +139,16 @@ function visitObject(visitNode, indent, obj, arg) {
 }
 
 function visitString(visitNode, indent, str) {
-  if (str.indexOf('\n') === -1 || !indent) {
+  if (str.indexOf("\n") === -1 || !indent) {
     return onelineStringify(str);
   }
-  const string = str.replace(/\\/g, '\\\\').replace(doubleQuotesRE, "\\''");
+  const string = str.replace(/\\/g, "\\\\").replace(doubleQuotesRE, "\\''");
   return `'''${newlineWrap(indentLines(indent, string))}'''`;
 }
 
 // Handles undefined like JSON.stringify does, so some paths return nothing.
 function stringify(data, visitor, indent) {
-  if (typeof data === 'function' || typeof data === 'undefined') {
+  if (typeof data === "function" || typeof data === "undefined") {
     return undefined;
   }
 
@@ -167,21 +162,21 @@ function stringify(data, visitor, indent) {
     }
 
     switch (typeof node) {
-      case 'boolean':
+      case "boolean":
         return `${node}`;
 
-      case 'number':
+      case "number":
         if (isFinite(node)) {
           return `${node}`;
         }
-        return 'null';
+        return "null";
 
-      case 'string':
+      case "string":
         return visitString(visitNode, indent, node);
 
-      case 'object':
+      case "object":
         if (node === null) {
-          return 'null';
+          return "null";
         } else if (Array.isArray(node)) {
           return visitArray(visitNode, indent, node);
         }
