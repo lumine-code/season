@@ -21,10 +21,10 @@ npm install @lumine-code/season
 ## Usage
 
 ```js
-const CSON = require('@lumine-code/season')
+const CSON = require("@lumine-code/season");
 
-const settings = CSON.readFileSync('settings.json')
-CSON.writeFileSync('settings.json', settings)
+const settings = CSON.readFileSync("settings.json");
+CSON.writeFileSync("settings.json", settings);
 ```
 
 Use `setCacheDir(directory)` to enable parsed CSON caching. The package creates missing parent directories when writing files or cache entries.
