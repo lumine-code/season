@@ -4,7 +4,6 @@
   "helpers": ["helpers/legacy-jasmine.js"],
   "requires": [],
   "env": {
-    "forbidDuplicateNames": false,
     "stopSpecOnExpectationFailure": false,
     "random": false
   }
