@@ -2,6 +2,8 @@
 
 Reads, writes, and parses CSON, JSON, and JSONC files.
 
+Fork of [pulsar-edit/season](https://github.com/pulsar-edit/season).
+
 ## Features
 
 - **Unified file API**: reads and writes CSON, JSON, or JSONC according to the file extension.
