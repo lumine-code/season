@@ -3,6 +3,7 @@ const fs = require("fs");
 const path = require("path");
 
 let CSON = null; // defer until used
+let csonParserPromise = null;
 let JSONC = null; // defer until used
 
 let csonCache = null;
@@ -169,19 +170,19 @@ const isAllCommentsAndWhitespace = function (contents) {
   return true;
 };
 
+const reportParseError = function (objectPath, parseError, callback) {
+  parseError.path = objectPath;
+  if (parseError.filename == null) parseError.filename = objectPath;
+  parseError.message = `${objectPath}: ${parseError.message}`;
+  if (typeof callback === "function") callback(parseError);
+};
+
 const parseContents = function (objectPath, cachePath, contents, options, callback) {
   let object;
   try {
     object = parseObject(objectPath, contents, options);
   } catch (parseError) {
-    parseError.path = objectPath;
-    if (parseError.filename == null) {
-      parseError.filename = objectPath;
-    }
-    parseError.message = `${objectPath}: ${parseError.message}`;
-    if (typeof callback === "function") {
-      callback(parseError);
-    }
+    reportParseError(objectPath, parseError, callback);
     return;
   }
 
@@ -191,6 +192,60 @@ const parseContents = function (objectPath, cachePath, contents, options, callba
   if (typeof callback === "function") {
     callback(null, object);
   }
+};
+
+const loadCsonParser = function () {
+  if (CSON != null) return Promise.resolve(CSON);
+  if (csonParserPromise == null) {
+    csonParserPromise = import("./cson-parser.js")
+      .then((module) => {
+        CSON ??= module.default ?? module;
+        return CSON;
+      })
+      .catch((error) => {
+        csonParserPromise = null;
+        throw error;
+      });
+  }
+  return csonParserPromise;
+};
+
+const parseContentsAsync = function (
+  objectPath,
+  cachePath,
+  contents,
+  options,
+  callback,
+  swallowCallbackErrors = false,
+) {
+  const invoke = (action) => {
+    if (swallowCallbackErrors) {
+      try {
+        action();
+      } catch {}
+    } else {
+      action();
+    }
+  };
+  const parse = () =>
+    invoke(() => parseContents(objectPath, cachePath, contents, options, callback));
+  // JSON/JSONC and a warm CSON compiler retain their original callback timing.
+  if (path.extname(objectPath) !== ".cson" || CSON != null) return parse();
+  loadCsonParser().then(
+    () => queueMicrotask(parse),
+    (error) =>
+      queueMicrotask(() =>
+        invoke(() => {
+          // One pending import can reject several reads. Their path annotations
+          // belong to each callback, rather than to the shared loader error.
+          const properties = Object.getOwnPropertyDescriptors(error);
+          // V8's lazy stack getter requires the original Error's internal data.
+          properties.stack = { value: error.stack, writable: true, configurable: true };
+          const parseError = Object.create(Object.getPrototypeOf(error), properties);
+          reportParseError(objectPath, parseError, callback);
+        }),
+      ),
+  );
 };
 
 module.exports = {
@@ -291,19 +346,17 @@ module.exports = {
               try {
                 parsed = parseCacheContents(cached);
               } catch {
-                try {
-                  parseContents(objectPath, cachePath, contents, parseOptions, callback);
-                } catch {}
+                parseContentsAsync(objectPath, cachePath, contents, parseOptions, callback, true);
                 return;
               }
               return typeof callback === "function" ? callback(null, parsed) : undefined;
             });
           } else {
-            return parseContents(objectPath, cachePath, contents, parseOptions, callback);
+            return parseContentsAsync(objectPath, cachePath, contents, parseOptions, callback);
           }
         });
       } else {
-        return parseContents(objectPath, null, contents, parseOptions, callback);
+        return parseContentsAsync(objectPath, null, contents, parseOptions, callback);
       }
     });
   },
